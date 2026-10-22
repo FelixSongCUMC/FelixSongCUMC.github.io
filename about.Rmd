@@ -1,0 +1,17 @@
+---
+title: "about"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+
+# This is Felix's website
+
+This is the about page
+
+Use this button to go [home](index.html)
+
+
+

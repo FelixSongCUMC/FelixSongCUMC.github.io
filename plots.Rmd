@@ -1,0 +1,27 @@
+---
+title: "about"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+
+# This is Felix's website
+
+This is the plot page
+
+Use this button to go [home](index.html)
+
+
+```{r}
+library(tidyverse)
+
+plot_df = 
+  tibble(x = rnorm(100, 2, 3),
+         y = x + 23)
+
+ggplot(plot_df, aes(x=x, y=y)) +
+  geom_point()
+```
+
