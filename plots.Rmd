@@ -26,10 +26,12 @@ We first clean this dataset and then use a filtered subset of only observations 
 ```{r}
 ny_noaa_78 = ny_noaa |> 
   janitor::clean_names() |> 
-  separate(date, 
-           into= c("year", "month", "day"), 
-           sep="-", 
-           remove=TRUE) |> 
+  separate(
+    date, 
+    into= c("year", "month", "day"), 
+    sep="-", 
+    remove=TRUE
+  ) |> 
   mutate(
     month = as.numeric(month),
     day = as.numeric(day),
@@ -37,7 +39,9 @@ ny_noaa_78 = ny_noaa |>
     tmax = as.numeric(tmax),
     tmin = as.numeric(tmin)
   ) |> 
-  filter(year == 2007 | year == 2008, day == 1)
+  filter(
+    year == 2007 | year == 2008, 
+    day == 1)
 ```
 
 From this filtered and cleaned dataset, let's make a few plots. 
@@ -47,7 +51,10 @@ The first plot we are going to make is visualizing the average precipitation in 
 ```{r}
 ny_noaa_78 |> 
   group_by(year, month) |> 
-  summarize(mean_prcp = mean(prcp, na.rm=TRUE), .groups = "drop") |> 
+  summarize(
+    mean_prcp = mean(prcp, na.rm=TRUE),
+    .groups = "drop"
+  ) |> 
   mutate(
     year = as.factor(year),
     month = factor(month.abb[month], levels = month.abb)
@@ -58,7 +65,13 @@ ny_noaa_78 |>
     color = ~year, 
     type = "bar", 
     colors = "viridis"
-  ) 
+  ) |> 
+  layout(
+    title = "Average Precipitation by Month: 2007 vs. 2008",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Mean Precipitation (tenths of mm)"),
+    legend = list(title = list(text = "Year"))
+  )
   
 ```
 
@@ -70,7 +83,10 @@ The next plot we can show is a boxplot detailing the spread of individual precip
 
 ```{r}
 ny_noaa_78 |> 
-  filter(year == 2007, !is.na(prcp)) |> 
+  filter(
+    year == 2007, 
+    !is.na(prcp)
+  ) |> 
   mutate(
     year = as.factor(year),
     month = factor(month.abb[month], levels = month.abb)
@@ -80,7 +96,12 @@ ny_noaa_78 |>
     y = ~prcp, 
     type = "box", 
     colors = "viridis"
-  ) 
+  ) |> 
+  layout(
+    title = "Precipitation Distribution by Month in 2007",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Precipitation (tenths of mm)")
+  )
 ```
 
 
@@ -92,7 +113,11 @@ In this last plot, we are going to use a scatter plot to observe the association
 
 ```{r}
 ny_noaa_78 |> 
-  filter(!is.na(snow), !is.na(tmax), !is.na(tmin)) |> 
+  filter(
+    !is.na(snow), 
+    !is.na(tmax), 
+    !is.na(tmin)
+  ) |> 
   plot_ly(
     x = ~tmin, 
     y = ~tmax, 
@@ -101,11 +126,17 @@ ny_noaa_78 |>
     mode = "markers",
     colors = "viridis",
     alpha = 1
-  ) 
+  ) |> 
+  layout(
+    title = "Temperature association with Snowfall in 2007",
+    xaxis = list(title = "Min Temp"),
+    yaxis = list(title = "Max Temp"),
+    legend = list(title = list(text = "Snowfall"))
+  )
 ```
 
 
-Here, we can see that the lower the tmax and tmin are, the more likely for there to be snowfall, which is expected. However, we can see that the highest snowfall observation occurred when the tmax and tmin were at 17 and -106, which are not close to the coldest values. We can infer from this graph that there is a threshold value for snowfall to occur, the freezing point, but colder weather past that threshold is not definitively causing more snowfall. Note that the units for tmin and tmax are tenths of degrees Celsius and snowfall is measured in millimeters.
+Here, we can see that the lower the maximum temperature and minimum temperature are, the more likely for there to be snowfall, which is expected. However, we can see that the highest snowfall observation occurred when the maximum temperature and minimum temperature were at 17 and -106 respectively, which are not close to the coldest values. We can infer from this graph that there is a threshold value for snowfall to occur, the freezing point, but colder weather past that threshold is not definitively causing more snowfall. Note that the units for maximum temperature and minimum temperature are tenths of degrees Celsius and snowfall is measured in millimeters.
 
 
 

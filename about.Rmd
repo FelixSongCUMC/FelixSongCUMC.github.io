@@ -29,6 +29,8 @@ In the summer of 2024, I wanted to continue my previous summer's research and pa
 
 In the summer of 2025, I completed a training rotation at Genomes2People, focusing on learning foundational skills relevant in genomics and medicine. This included going through courses, researching genetic disease trials and interventions, and reading peer-reviewed papers exploring developments in genomic analytics and return of results. Throughout the training, I was fortunate to attend several conferences where I learned about the most recent developments in genomic medicine, and I was able to make great connections with bright minds in the field.
 
+## Resume
 
+<img src="image/resume.png" style="width: 75%">
 
 
