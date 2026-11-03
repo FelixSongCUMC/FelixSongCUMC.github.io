@@ -1,29 +1,26 @@
 ---
 title: "Plots on NY Weather"
 output: 
-  html_document:
-    toc: true
-    toc_float: true
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    navbar:
+      - { title: "Home", href: "index.html", align: left }
+      - { title: "About", href: "about.html", align: right }
+      - { title: "Plots", href: "plots.html", align: right }
+      - { icon: "fa-envelope", href: "mailto:<fs2968@cumc.columbia.edu>", align: right }
+      - { icon: "fa-github", href: "http://github.com/FelixSongCUMC/", align: right }
+      - { icon: "fa-linkedin", href: "https://www.linkedin.com/in/felix-song-6b4522260/", align: right }
 ---
 
-# Problem 2
-
-Importing necessary libraries and loading our base dataset:
-```{r}
+```{r setup, include=FALSE}
+library(flexdashboard)
 library(tidyverse)
 library(p8105.datasets)
 library(plotly)
 
 data("ny_noaa")
 
-```
-
-
-This dataset contains information about the weather in NYC at different points in time, recording information like `r names(ny_noaa[2:7])` for a total of `r nrow(ny_noaa)` entries.
-
-We first clean this dataset and then use a filtered subset of only observations made in 2007 on the first of the month, so that our visualization isn't too crowded and therefore understandable. 
-
-```{r}
 ny_noaa_78 = ny_noaa |> 
   janitor::clean_names() |> 
   separate(
@@ -44,10 +41,11 @@ ny_noaa_78 = ny_noaa |>
     day == 1)
 ```
 
-From this filtered and cleaned dataset, let's make a few plots. 
+Column {data-width=650}
+-----------------------------------------------------------------------
 
-## Plot 1
-The first plot we are going to make is visualizing the average precipitation in NY, grouped by month, comparing 2007 to 2008:
+### Chart A
+
 ```{r}
 ny_noaa_78 |> 
   group_by(year, month) |> 
@@ -72,14 +70,12 @@ ny_noaa_78 |>
     yaxis = list(title = "Mean Precipitation (tenths of mm)"),
     legend = list(title = list(text = "Year"))
   )
-  
 ```
 
-As you can see from the graph above, the total amount of rainfall in 2008 was greater than the total in 2007. In both years, we can see that the distribution of precipitation has a gradual peak from the months of early winter, peaking in spring and early summer, and then gradually decreasing as the summer goes on. Both distributions have single-month spikes in a winter month, December fo 2008 and January for 2007. Note, precipitation is measured in tenths of millimeters
+Column {data-width=350}
+-----------------------------------------------------------------------
 
-## Plot 2
-
-The next plot we can show is a boxplot detailing the spread of individual precipitation observations by month in 2007:
+### Chart B
 
 ```{r}
 ny_noaa_78 |> 
@@ -104,12 +100,7 @@ ny_noaa_78 |>
   )
 ```
 
-
-In this graph, we can see that the per month distributions, shown by the boxplots, reflect the mean precipitation patterns we previously saw. For several months, like February and March, have an extremely low median value, but we saw that the mean was non-zero, so we can infer that the mean is mostly represented by a few heavy rain/snowfall days. Outside of January, one observation in June actually contains the highest level of precipitation from that whole year. 
-
-## Plot 3
-
-In this last plot, we are going to use a scatter plot to observe the association between max temperature and min temperature impacted snowfall in 2007 and 2008:
+### Chart C
 
 ```{r}
 ny_noaa_78 |> 
@@ -134,11 +125,6 @@ ny_noaa_78 |>
     legend = list(title = list(text = "Snowfall"))
   )
 ```
-
-
-Here, we can see that the lower the maximum temperature and minimum temperature are, the more likely for there to be snowfall, which is expected. However, we can see that the highest snowfall observation occurred when the maximum temperature and minimum temperature were at 17 and -106 respectively, which are not close to the coldest values. We can infer from this graph that there is a threshold value for snowfall to occur, the freezing point, but colder weather past that threshold is not definitively causing more snowfall. Note that the units for maximum temperature and minimum temperature are tenths of degrees Celsius and snowfall is measured in millimeters.
-
-
 
 
 
