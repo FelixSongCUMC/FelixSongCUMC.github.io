@@ -1,27 +1,116 @@
 ---
-title: "about"
+title: "Plot"
 output: 
   html_document:
     toc: true
     toc_float: true
 ---
 
+# Problem 2
 
-# This is Felix's website
-
-This is the plot page
-
-Use this button to go [home](index.html)
-
-
+Importing necessary libraries and loading our base dataset:
 ```{r}
 library(tidyverse)
+library(p8105.datasets)
+library(plotly)
 
-plot_df = 
-  tibble(x = rnorm(100, 2, 3),
-         y = x + 23)
+data("ny_noaa")
 
-ggplot(plot_df, aes(x=x, y=y)) +
-  geom_point()
 ```
+
+
+This dataset contains information about the weather in NYC at different points in time, recording information like `r names(ny_noaa[2:7])` for a total of `r nrow(ny_noaa)` entries.
+
+We first clean this dataset and then use a filtered subset of only observations made in 2007 on the first of the month, so that our visualization isn't too crowded and therefore understandable. 
+
+```{r}
+ny_noaa_78 = ny_noaa |> 
+  janitor::clean_names() |> 
+  separate(date, 
+           into= c("year", "month", "day"), 
+           sep="-", 
+           remove=TRUE) |> 
+  mutate(
+    month = as.numeric(month),
+    day = as.numeric(day),
+    year = as.numeric(year),
+    tmax = as.numeric(tmax),
+    tmin = as.numeric(tmin)
+  ) |> 
+  filter(year == 2007 | year == 2008, day == 1)
+```
+
+From this filtered and cleaned dataset, let's make a few plots. 
+
+## Plot 1
+The first plot we are going to make is visualizing the average precipitation in NY, grouped by month, comparing 2007 to 2008:
+```{r}
+ny_noaa_78 |> 
+  group_by(year, month) |> 
+  summarize(mean_prcp = mean(prcp, na.rm=TRUE), .groups = "drop") |> 
+  mutate(
+    year = as.factor(year),
+    month = factor(month.abb[month], levels = month.abb)
+  ) |> 
+  plot_ly(
+    x = ~month, 
+    y = ~mean_prcp, 
+    color = ~year, 
+    type = "bar", 
+    colors = "viridis"
+  ) 
+  
+```
+
+As you can see from the graph above, the total amount of rainfall in 2008 was greater than the total in 2007. In both years, we can see that the distribution of precipitation has a gradual peak from the months of early winter, peaking in spring and early summer, and then gradually decreasing as the summer goes on. Both distributions have single-month spikes in a winter month, December fo 2008 and January for 2007. Note, precipitation is measured in tenths of millimeters
+
+## Plot 2
+
+The next plot we can show is a boxplot detailing the spread of individual precipitation observations by month in 2007:
+
+```{r}
+ny_noaa_78 |> 
+  filter(year == 2007, !is.na(prcp)) |> 
+  mutate(
+    year = as.factor(year),
+    month = factor(month.abb[month], levels = month.abb)
+  ) |> 
+  plot_ly(
+    x = ~month, 
+    y = ~prcp, 
+    type = "box", 
+    colors = "viridis"
+  ) 
+```
+
+
+In this graph, we can see that the per month distributions, shown by the boxplots, reflect the mean precipitation patterns we previously saw. For several months, like February and March, have an extremely low median value, but we saw that the mean was non-zero, so we can infer that the mean is mostly represented by a few heavy rain/snowfall days. Outside of January, one observation in June actually contains the highest level of precipitation from that whole year. 
+
+## Plot 3
+
+In this last plot, we are going to use a scatter plot to observe the association between max temperature and min temperature impacted snowfall in 2007 and 2008:
+
+```{r}
+ny_noaa_78 |> 
+  filter(!is.na(snow), !is.na(tmax), !is.na(tmin)) |> 
+  plot_ly(
+    x = ~tmin, 
+    y = ~tmax, 
+    color = ~snow,
+    type = "scatter",
+    mode = "markers",
+    colors = "viridis",
+    alpha = 1
+  ) 
+```
+
+
+Here, we can see that the lower the tmax and tmin are, the more likely for there to be snowfall, which is expected. However, we can see that the highest snowfall observation occurred when the tmax and tmin were at 17 and -106, which are not close to the coldest values. We can infer from this graph that there is a threshold value for snowfall to occur, the freezing point, but colder weather past that threshold is not definitively causing more snowfall. Note that the units for tmin and tmax are tenths of degrees Celsius and snowfall is measured in millimeters.
+
+
+
+
+
+
+
 

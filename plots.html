@@ -11,12 +11,12 @@
 
 
 
-<title>about</title>
+<title>Plot</title>
 
 <script src="site_libs/header-attrs-2.32/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cerulean.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -35,6 +35,14 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="site_libs/plotly-binding-4.12.1/plotly.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="site_libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="site_libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
 
@@ -341,6 +349,12 @@ div.tocify {
      
   </a>
 </li>
+<li>
+  <a href="https://www.linkedin.com/in/felix-song-6b4522260/">
+    <span class="fa fa-linkedin fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -350,33 +364,110 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">about</h1>
+<h1 class="title toc-ignore">Plot</h1>
 
 </div>
 
 
-<div id="this-is-felixs-website" class="section level1">
-<h1>This is Felix’s website</h1>
-<p>This is the plot page</p>
-<p>Use this button to go <a href="index.html">home</a></p>
+<div id="problem-2" class="section level1">
+<h1>Problem 2</h1>
+<p>Importing necessary libraries and loading our base dataset:</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ───────────────────────────── tidyverse 2.0.0 ──
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.2.1     ✔ readr     2.2.0
 ## ✔ forcats   1.0.1     ✔ stringr   1.6.0
 ## ✔ ggplot2   4.0.3     ✔ tibble    3.3.1
 ## ✔ lubridate 1.9.5     ✔ tidyr     1.3.2
 ## ✔ purrr     1.2.2     
-## ── Conflicts ─────────────────────────────────────────────── tidyverse_conflicts() ──
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<pre class="r"><code>plot_df = 
-  tibble(x = rnorm(100, 2, 3),
-         y = x + 23)
-
-ggplot(plot_df, aes(x=x, y=y)) +
-  geom_point()</code></pre>
-<p><img src="plots_files/figure-html/unnamed-chunk-1-1.png" alt="" width="672" /></p>
+<pre class="r"><code>library(p8105.datasets)
+library(plotly)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;plotly&#39;
+## 
+## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     last_plot
+## 
+## The following object is masked from &#39;package:stats&#39;:
+## 
+##     filter
+## 
+## The following object is masked from &#39;package:graphics&#39;:
+## 
+##     layout</code></pre>
+<pre class="r"><code>data(&quot;ny_noaa&quot;)</code></pre>
+<p>This dataset contains information about the weather in NYC at
+different points in time, recording information like date, prcp, snow,
+snwd, tmax, tmin for a total of 2595176 entries.</p>
+<p>We first clean this dataset and then use a filtered subset of only
+observations made in 2007 on the first of the month, so that our
+visualization isn’t too crowded and therefore understandable.</p>
+<pre class="r"><code>ny_noaa_78 = ny_noaa |&gt; 
+  janitor::clean_names() |&gt; 
+  separate(date, 
+           into= c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;), 
+           sep=&quot;-&quot;, 
+           remove=TRUE) |&gt; 
+  mutate(
+    month = as.numeric(month),
+    day = as.numeric(day),
+    year = as.numeric(year)
+  ) |&gt; 
+  filter(year == 2007 | year == 2008, day == 1)</code></pre>
+<p>From this filtered and cleaned dataset, let’s make a few plots.</p>
+<p>The first plot we are going to make is visualizing the average
+precipitation in NY, grouped by month, comparing 2007 to 2008:</p>
+<pre class="r"><code>ny_noaa_78 |&gt; 
+  group_by(year, month) |&gt; 
+  summarize(mean_prcp = mean(prcp, na.rm=TRUE), .groups = &quot;drop&quot;) |&gt; 
+  mutate(
+    year = as.factor(year),
+    month = factor(month.abb[month], levels = month.abb)
+  ) |&gt; 
+  plot_ly(
+    x = ~month, 
+    y = ~mean_prcp, 
+    color = ~year, 
+    type = &quot;bar&quot;, 
+    colors = &quot;viridis&quot;
+  ) </code></pre>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-643d38315b5697de68fe" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-643d38315b5697de68fe">{"x":{"visdat":{"e3a31cd3dee3":["function () ","plotlyVisDat"]},"cur_data":"e3a31cd3dee3","attrs":{"e3a31cd3dee3":{"x":{},"y":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"title":"month","type":"category","categoryorder":"array","categoryarray":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"mean_prcp"},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[80.264317180616743,3.7349999999999999,9.5619469026548671,14.386666666666667,7.8504273504273501,22.120000000000001,11.697777777777778,0.25892857142857145,0.03669724770642202,1.452914798206278,8.1369294605809124,10.708333333333334],"type":"bar","name":"2007","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[25.597457627118644,83.77235772357723,49.630901287553648,75.475095785440615,2.6387832699619773,58.180505415162457,16.681978798586574,8.1901408450704221,0.13986013986013987,64.036363636363632,0.2087227414330218,123.28614457831326],"type":"bar","name":"2008","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>As you can see from the graph above, the total amount of rainfall in
+2008 was greater than the total in 2007. In both years, we can see that
+the distribution of precipitation has a gradual peak from the months of
+early winter, peaking in spring and early summer, and then gradually
+decreasing as the summer goes on. Both distirbutions have single-month
+spikes in a winter month, December fo 2008 and January for 2007.</p>
+<p>The next plot we can show is a boxplot detailing the spread of
+individual precipitation observations by month in 2007:</p>
+<pre class="r"><code>ny_noaa_78 |&gt; 
+  filter(year == 2007, !is.na(prcp)) |&gt; 
+  mutate(
+    year = as.factor(year),
+    month = factor(month.abb[month], levels = month.abb)
+  ) |&gt; 
+  plot_ly(
+    x = ~month, 
+    y = ~prcp, 
+    type = &quot;box&quot;, 
+    colors = &quot;viridis&quot;
+  ) </code></pre>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-83bc4d930e955e38af72" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-83bc4d930e955e38af72">{"x":{"visdat":{"e3a35365b76b":["function () ","plotlyVisDat"]},"cur_data":"e3a35365b76b","attrs":{"e3a35365b76b":{"x":{},"y":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"box"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"title":"month","type":"category","categoryorder":"array","categoryarray":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"prcp"},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"fillcolor":"rgba(31,119,180,0.5)","x":["Dec","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Sep","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Oct","Nov","Dec","Sep","Oct","Nov","Dec","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Nov","Mar","Jul","Aug","Sep","Oct","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Nov","Dec","Jan","Feb","Mar","Apr","May","Jul","Sep","Oct","Nov","Dec","Mar","Apr","May","Jun","Jul","Aug","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Apr","May","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Jan","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","May","Jun","Jul","Aug","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Apr","May","Jun","Jul","Dec","Oct","Nov","Dec","Dec","Nov","Nov","Oct","Nov","Dec","Sep","Oct","Nov","Jan","Mar","Apr","May","Jun","Jul","Aug","Nov","Jan","Feb","Mar","Apr","May","Jul","Aug","Sep","Oct","Nov","Dec","Sep","Oct","Nov","Dec","Nov","Dec","Nov","Dec","Dec","Nov","Dec","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Nov","Apr","Jun","Jul","Aug","Jan","Mar","Apr","May","Jul","Aug","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Dec","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","May","Jun","Aug","Sep","Nov","Dec","Apr","May","Jun","Jul","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Jan","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Mar","May","Jul","Aug","Sep","Oct","Nov","Dec","Dec","Dec","Nov","Dec","Oct","Nov","Dec","Dec","Dec","Dec","Nov","Dec","Sep","Oct","Nov","Dec","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Dec","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jul","Jan","Feb","Mar","Apr","May","Jul","Aug","Nov","Jan","Mar","Apr","May","Jun","Jul","Aug","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Dec","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Jan","Feb","Mar","Apr","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Oct","Nov","Dec","Dec","Oct","Nov","Dec","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Jan","Mar","Apr","May","Jun","Jul","Aug","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Dec","Nov","Dec","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Feb","Apr","May","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Dec","Apr","May","Jun","Aug","Sep","Oct","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","May","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Jan","May","Jun","Oct","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Nov","Dec","Jan","Apr","Jun","Jul","Sep","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Nov","Dec","Feb","Mar","May","Aug","Nov","Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Dec","Jan","May","Jun","Jul","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Dec","Jan","Feb","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Aug","Sep","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Sep","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Sep","Oct","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Apr","May","Jun","Jul","Aug","Sep","Oct","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Sep","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Feb","Mar","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Apr","May","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Sep","Oct","Nov","Jan","Feb","Mar","Apr","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Feb","Mar","Aug","Sep","Oct","Nov","Dec","Mar","May","Jun","Jul","Aug","Sep","Oct","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Oct","Nov","Dec","Jan","Feb","Mar","May","Jun","Jul","Aug","Sep","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","Jun","Sep","Nov","Dec","Jan","Feb","Mar","May","Jun","Jul","Aug","Sep","Nov","Dec","Jan","Feb","Mar","Apr","May","Jan","Feb","Mar","May","Jun","Aug","Sep","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Dec","Jan","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jul","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Sep","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Dec","May","Jun","Jul","Aug","Oct","Nov","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jul","Aug","Sep","Oct","Nov","Dec","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan"],"y":[46,0,0,0,0,64,0,0,30,10,0,0,0,0,15,0,0,0,0,0,0,20,0,51,0,0,0,0,33,0,0,0,0,0,0,0,53,0,0,38,0,0,0,0,0,0,18,0,0,0,10,0,0,0,0,0,33,0,0,0,0,0,3,0,0,0,0,0,28,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,30,0,0,0,0,0,28,0,0,0,0,25,0,0,8,0,43,58,18,38,0,13,0,0,0,13,0,58,0,0,0,0,0,0,0,8,38,0,0,0,0,0,0,38,0,10,71,20,0,0,5,0,0,23,8,0,0,18,0,0,0,5,0,20,5,0,8,0,0,0,0,0,0,5,5,56,0,86,8,0,0,0,0,10,5,0,0,0,0,0,0,0,41,0,0,0,51,5,0,0,0,0,41,76,0,0,0,0,25,28,0,0,0,0,36,76,0,0,0,48,36,0,0,0,0,15,0,102,48,0,58,20,38,0,0,0,0,0,0,0,0,137,0,10,0,30,5,66,0,0,0,0,46,0,0,0,33,0,124,0,0,0,0,10,25,0,0,0,0,0,0,0,0,0,8,0,0,3,20,0,5,51,0,5,0,0,0,0,10,41,122,0,43,0,0,0,0,18,0,0,0,0,91,224,97,5,0,0,132,0,0,0,0,3,0,0,0,0,10,41,48,18,0,0,0,0,0,0,0,0,0,18,36,41,0,0,89,0,0,0,53,0,0,0,0,51,0,127,0,0,0,51,0,36,10,38,74,0,0,0,0,0,30,0,58,33,0,8,0,0,0,13,0,0,0,10,0,0,0,20,25,0,18,13,23,0,0,0,30,28,0,0,0,0,0,0,10,3,5,23,0,20,0,0,30,0,0,0,0,15,0,0,0,0,0,0,15,5,25,0,0,0,0,13,0,0,0,5,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,5,0,0,0,0,8,0,5,20,0,0,8,20,102,20,71,5,0,0,0,180,0,0,0,0,0,18,0,0,0,0,0,132,0,5,5,0,0,0,0,0,0,3,0,0,5,0,0,23,0,36,0,0,0,0,3,15,0,0,0,0,0,41,5,0,0,64,25,0,0,0,0,46,0,0,0,0,0,0,0,41,0,0,0,0,102,10,0,0,0,5,8,0,0,13,0,0,0,8,0,0,0,10,30,0,0,0,0,15,0,0,0,10,3,30,3,0,0,0,18,86,0,38,0,3,0,0,3,0,0,0,41,0,10,0,8,0,0,0,0,0,0,30,0,25,43,0,0,0,0,0,0,0,8,66,0,8,36,0,0,0,0,0,0,51,0,25,0,0,0,0,30,0,0,0,0,0,8,0,25,13,0,0,124,33,0,0,0,0,30,0,0,0,0,0,3,30,0,0,5,0,13,0,0,0,0,13,10,36,3,0,0,0,0,0,0,0,0,8,41,15,0,0,0,0,20,20,0,0,0,10,8,0,0,56,36,23,0,0,0,0,0,102,56,0,0,0,0,0,0,0,0,0,15,28,0,0,25,46,25,0,0,0,0,0,28,8,5,0,0,5,0,97,0,0,0,0,0,0,0,0,0,18,58,5,0,0,0,0,102,0,0,0,30,13,84,13,0,0,0,0,15,0,0,0,43,147,5,0,0,5,0,5,0,0,0,0,33,81,0,0,0,0,0,0,0,0,0,15,13,325,0,0,15,3,41,0,0,0,0,0,0,15,0,0,79,0,0,13,0,0,442,0,30,13,79,10,5,0,0,0,0,0,15,0,0,0,0,15,0,0,0,0,104,0,0,0,15,3,0,0,0,0,91,0,0,0,10,10,43,0,0,0,0,64,28,0,0,0,0,0,0,0,0,0,0,140,0,0,0,0,191,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,485,0,15,25,25,0,3,0,0,0,0,13,0,0,0,20,0,0,0,0,76,0,0,0,0,25,0,0,0,0,0,0,0,0,0,0,0,66,0,0,81,0,53,0,0,38,0,0,0,0,8,10,0,0,0,0,3,175,0,0,0,0,30,10,0,0,0,0,0,38,0,0,0,0,0,3,0,0,0,5,0,76,0,0,0,0,155,0,0,0,0,0,3,10,20,0,0,0,0,0,0,0,33,10,5,0,112,23,0,3,51,0,0,0,0,0,0,0,0,0,0,86,8,0,0,0,0,13,0,0,0,23,36,107,0,0,0,0,33,0,0,0,0,15,0,0,48,43,0,0,0,5,33,0,0,0,0,150,0,0,0,0,3,5,76,0,0,0,0,38,0,0,0,0,51,10,0,0,15,0,0,0,23,18,0,0,0,76,0,0,0,0,0,38,28,0,196,36,117,20,0,0,46,152,0,0,0,0,0,0,0,0,0,0,8,69,0,0,0,0,107,20,0,0,0,0,0,495,0,0,0,0,0,8,0,0,0,0,0,56,0,0,10,287,0,0,0,0,0,0,51,0,0,0,0,33,51,0,0,0,0,0,51,0,0,0,0,51,20,0,0,0,64,0,0,0,0,0,8,0,0,0,0,0,71,0,0,0,0,3,0,0,0,0,10,28,0,0,0,20,0,0,0,5,0,64,43,38,0,0,0,0,0,0,89,5,3,3,8,0,15,0,0,0,0,13,20,0,0,18,30,20,0,0,0,0,0,0,0,8,0,0,0,0,10,0,0,0,13,3,330,5,0,0,0,5,8,0,0,0,15,8,231,0,0,0,0,0,0,0,0,0,0,74,15,0,0,0,0,0,18,0,0,0,13,3,0,0,0,0,0,221,0,53,0,0,0,0,117,3,0,0,0,0,79,0,0,0,89,23,56,0,76,0,25,10,0,0,0,0,114,0,0,0,18,5,117,86,0,0,13,0,0,0,0,0,0,25,0,0,33,5,0,61,0,0,0,0,0,0,18,13,74,94,0,0,0,0,33,0,0,0,33,61,18,0,0,5,0,15,0,0,0,0,5,5,71,0,33,0,178,25,0,0,0,0,0,91,3,0,0,3,3,20,0,0,0,8,13,18,0,0,0,0,41,18,0,0,0,13,3,30,0,0,0,0,175,0,0,0,0,8,0,69,8,0,0,3,0,36,0,0,0,38,51,0,0,0,0,69,0,0,0,0,0,10,5,5,0,3,0,0,8,0,0,0,48,25,183,0,0,0,0,25,0,0,0,0,0,41,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,109,0,0,0,0,30,18,20,0,0,0,0,3,23,0,0,0,3,5,81,53,0,0,0,0,5,0,0,0,8,13,33,3,0,0,0,0,0,0,0,0,36,5,0,0,0,0,0,0,0,0,8,0,81,3,0,0,0,30,0,0,0,0,33,8,58,0,0,0,0,145,3,0,0,0,0,5,33,10,3,8,3,0,0,0,0,0,10,3,13,0,0,0,0,28,23,0,0,0,0,5,25,0,127,56,0,0,0,0,0,0,0,0,127,0,0,0,10,0,0,0,0,0,0,0,343,0,8,10,36,0,5,0,0,0,0,0,231,0,0,5,0,147,10,0,0,0,0,0,18,5,0,0,0,5,3,0,0,0,3,38,5,0,5,0,0,18,0,0,0,0,0,0,114,109,0,0,0,0,0,0,0,0,107,0,0,0,0,33,0,0,0,10,28,0,0,0,0,0,0,0,0,13,315,0,41,64,28,15,28,66,5,0,0,0,0,28,3,97,0,0,0,0,0,38,0,0,0,0,5,28,0,33,51,15,0,0,0,0,0,46,15,0,0,0,0,0,13,0,0,0,0,0,0,61,0,0,0,0,84,13,0,0,0,0,36,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,229,0,0,0,0,0,43,0,0,0,5,38,0,3,0,0,20,0,0,0,0,8,3,89,0,0,86,0,0,23,0,0,0,20,8,0,0,0,0,0,0,8,0,0,0,23,0,15,0,0,0,0,117,0,0,0,23,3,64,102,0,0,0,0,0,0,0,0,28,0,51,0,0,0,0,0,0,0,0,0,0,0,157,18,0,0,0,0,15,0,0,0,0,13,102,0,0,0,0,61,18,0,0,0,0,3,30,33,0,0,0,0,18,0,0,0,10,25,0,241,86,43,0,0,0,0,0,61,191,0,0,0,0,51,15,0,0,0,0,0,155,0,0,3,0,41,107,0,0,0,0,282,0,0,3,0,0,0,0,0,0,0,0,71,0,185,0,0,0,0,0,8,0,0,0,0,0,198,0,0,0,0,51,18,0,0,0,0,30,5,0,0,0,0,0,0,0,0,13,23,43,0,0,0,0,20,0,0,0,0,30,0,231,0,0,0,0,64,0,0,0,0,5,0,0,0,0,33,0,0,0,0,43,0,0,0,0,0,8,58,0,0,3,61,10,0,0,0,0,0,0,140,0,0,0,0,81,25,0,0,0,0,5,0,0,0,53,0,0,0,0,114,0,0,8,0,0,0,0,20,8,38,0,0,0,0,0,20,0,0,20,0,0,64,13,165,0,0,38,0,41,46,152,0,0,0,0,0,0,0,0,0,0,20,3,0,0,0,0,0,0,0,13,33,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,46,0,0,0,0,0,0,53,0,0,0,3,13,0,0,0,0,3,3,46,0,0,0,0,112,13,0,0,76,0,0,0,0,0,71,0,0,0,13,76,56,0,0,0,0,33,28,41,0,0,0,5,150,0,0,0,0,0,0,173,0,0,0,0,23,46,0,0,0,0,0,20,5,0,0,0,0,0,0,0,0,25,3,28,0,33,43,46,25,0,0,18,46,13,13,0,25,0,0,43,0,0,0,0,5,267,0,0,18,48,0,3,0,0,0,0,0,38,20,0,0,0,0,38,0,0,28,28,53,41,0,0,0,13,8,0,0,28,8,38,0,0,0,0,0,3,0,0,0,0,0,28,0,5,0,0,0,0,0,0,0,18,3,147,0,0,0,0,36,0,0,0,0,0,0,89,0,0,46,0,0,0,0,71,0,0,0,3,25,20,0,0,0,0,0,33,0,3,3,0,0,0,0,0,0,8,0,69,0,0,0,0,33,0,0,0,0,0,0,0,8,0,0,0,48,0,0,0,0,28,20,0,0,0,0,5,0,0,0,0,114,0,0,0,0,0,0,64,13,0,0,0,0,5,0,0,0,36,0,28,15,28,66,5,0,0,0,0,0,28,3,53,0,0,51,0,0,0,0,0,0,13,0,351,0,13,36,102,0,8,0,0,0,0,0,142,0,0,30,15,0,0,0,0,0,0,0,305,0,0,46,66,117,3,0,0,0,0,0,338,0,25,18,79,0,0,0,0,0,0,0,33,0,18,25,15,0,0,0,0,0,36,13,61,0,23,61,0,0,0,0,0,0,0,3,130,0,0,0,0,0,91,0,0,0,61,8,33,0,28,36,8,0,0,0,0,0,36,3,28,0,3,33,5,3,0,0,0,0,5,0,168,0,0,46,8,5,0,0,0,0,0,0,239,0,28,18,0,3,3,0,0,0,0,0,38,0,15,69,3,3,0,0,0,0,10,15,15,0,30,130,20,0,0,0,0,0,10,18,25,0,0,33,99,0,0,0,0,0,8,3,61,0,20,86,8,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,262,0,0,51,5,5,0,0,0,0,0,0,320,0,13,18,89,0,0,0,0,0,0,0,320,0,5,38,94,0,8,0,0,0,0,0,186,0,35,30,0,4,0,0,0,0,0,0,25,0,4,53,46,0,0,0,0,0,11,5,5,0,0,0,10,0,0,0,0,0,0,0,15,0,0,25,25,0,0,0,0,0,13,0,86,0,0,15,0,48,13,0,0,0,53,0,386,0,36,15,81,0,0,0,0,0,0,0,51,0,0,0,66,0,0,25,0,0,20,0,0,0,23,0,485,0,18,23,28,0,0,0,0,0,0,0,300,0,33,28,152,0,0,0,0,0,0,0,58,0,0,20,15,0,28,0,0,0,36,0,30],"type":"box","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"line":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>In this graph, we can see that the per month distributions, shown by
+the boxplots, reflect the mean precipitation patterns we previously saw.
+Note that several months, like February and March, have an extremely low
+median value, but we saw that the mean was non-zero, so we can infer
+that the mean is mostly represented by a few heavy rain/snowfall days.
+Outside of January, one observation in June actually contains the
+highest level of precipitation from that whole year.</p>
+<p>In this last plot, we are going to use a scatter plot to observe how
+the</p>
 </div>
 
 
